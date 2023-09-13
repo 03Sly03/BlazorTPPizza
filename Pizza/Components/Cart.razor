@@ -1,0 +1,29 @@
+﻿@using Pizza.Models
+
+<div class="d-flex justify-content-center">
+    <ul class="list-group" style="width : 50%">
+        @foreach (MyPizza pizza in PizzaData)
+        {
+            <li class="list-group-item border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="fs-5 fw-bold text-warning mb-0">@pizza.Name</h5>
+                    <div class="d-flex align-items-center">
+                        <p class="text-info fs-5 fw-bolder text-center mb-0 mx-3">@(pizza.Price + ".00")€</p>
+                        <button class="btn" @onclick="() => PizzaData.Remove(pizza)">
+                            <img src="/images/cancel-bold.svg" alt="icone du signe multiplier en rouge" style="width : 20px" />
+                        </button>
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+<div>
+    <p class="text-center fs-4 text-info fw-bolder">Total : @PizzaData.Sum(p => p.Price)€</p>
+</div>
+
+@code {
+    [Parameter]
+    public List<MyPizza> PizzaData { get; set; } = new List<MyPizza>();
+    public decimal Total { get; set; }
+}

@@ -1,0 +1,63 @@
+﻿@using Pizza.Models;
+@using Pizza.Services;
+@inject MyPizzaFakeDbService MyPizzas;
+
+<h3 class="btn btn-success w-100" @onclick="() => IsAddPizza = !IsAddPizza"><span><img src="/images/add.svg" alt="icone plus" style="margin-right : 5px; margin-bottom : 1px; height : 20px" /></span>Ajouter une pizza</h3>
+
+@if (IsAddPizza)
+{
+    <EditForm Model="ModelPizza" OnSubmit="HandleSubmit" @onclick="RerenderCallBack" class="mb-5">
+        <DataAnnotationsValidator />
+        <div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Nom :</label>
+                <InputText @bind-Value="ModelPizza.Name" class="form-control" id="name" placeholder="Le nom de la pizza ici..."></InputText>
+                <small>
+                    <ValidationMessage For="() => ModelPizza.Name"></ValidationMessage>
+                </small>
+            </div>
+        </div>
+        <div>
+        <div class="mb-3">
+                <label for="ingredients" class="form-label">Ingrédients (séparés par des virgules) :</label>
+                <InputText @bind-Value="ModelPizza.Ingredients" class="form-control" id="ingredients" placeholder="Les ingrédients..."></InputText>
+                <small>
+                    <ValidationMessage For="() => ModelPizza.Ingredients"></ValidationMessage>
+                </small>
+            </div>
+        </div>
+        <div>
+            <div class="mb-3">
+                <label for="price" class="form-label">Prix :</label>
+                <InputNumber @bind-Value="ModelPizza.Price" class="form-control" id="price" placeholder="Le Prix..."></InputNumber>
+                <small>
+                    <ValidationMessage For="() => ModelPizza.Price"></ValidationMessage>
+                </small>
+            </div>
+        </div>
+        <div>
+            <div class="mb-3">
+                <label for="picturePath" class="form-label">Liens vers l'image :</label>
+                <InputText @bind-Value="ModelPizza.PicturePath" class="form-control" id="picturePath" placeholder="Le lien de l'image..."></InputText>
+                <small>
+                    <ValidationMessage For="() => ModelPizza.PicturePath"></ValidationMessage>
+                </small>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Validation</button>
+    </EditForm>
+}
+
+@code {
+    public MyPizza ModelPizza { get; set; } = new MyPizza();
+
+    public bool IsAddPizza { get; set; } = false;
+
+    private void HandleSubmit()
+    {
+        MyPizzas.Post(ModelPizza);
+    }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> RerenderCallBack { get; set; }
+}

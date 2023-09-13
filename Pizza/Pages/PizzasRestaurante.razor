@@ -1,0 +1,84 @@
+﻿@page "/pizzas-restaurante";
+@using Pizza.Models;
+@using Pizza.Services;
+@inject MyPizzaFakeDbService MyPizzas;
+
+<h3>Pizzas Restaurante</h3>
+
+
+<div class="mb-3 form-check d-flex @(Checked ? "justify-content-center" : "")" >
+    <input type="checkbox" @bind="Checked" class="form-check-input" style="margin-right : 5px" id="admin" />
+    <label for="admin" class="form-check-label ">Mode Admin</label>
+</div>
+
+@if (Checked)
+{
+<AddPizza RerenderCallBack="ReRender" />
+}
+
+<div class="row">
+    <div class="col-6">
+        @foreach (MyPizza pizza in _myPizzasList)
+        {
+            <div class="card mb-4 flex flex-row justify-content-between border-0">
+                <div class="row g-0">
+                    <div class="col-md-4" style="max-width : 130px">
+                        <img src="@pizza.PicturePath" class="img-fluid rounded-start" alt="Une pizza @pizza.Name">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body pt-0">
+                            <h5 class="card-title fs-4 fw-bold text-warning">@pizza.Name</h5>
+                            <p class="card-text fst-italic">@pizza.Ingredients</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-info fs-4 fw-bolder text-center mb-0">@(pizza.Price + ".00")€</p>
+                    @if(Checked)
+                    {
+                        <div style="width : 80px" class="d-flex">
+                            <button @onclick="() => PizzaData.Add(pizza)" class="btn btn-success rounded-3 d-flex justify-content-center align-items-center" style="width : 40px; height : 30px">
+                                <img src="/images/cart-2-bold.svg" alt="icone d'un panier en noir & blanc"/>
+                            </button>
+                            <button class="btn btn-info rounded-3 d-flex justify-content-center align-items-center" style="width : 40px; height : 30px">
+                                <img src="/images/edit.svg" alt="icone editer" />
+                            </button>
+                        </div>
+                        <button @onclick="() => MyPizzas.Delete(pizza.Id)" class="btn btn-danger rounded-3 d-flex justify-content-center align-items-center" style="width : 80px; height : 30px">
+                            <img src="/images/delete.svg" alt="icone editer" />
+                        </button>
+                    }
+                    else
+                    {
+                        <button @onclick="() => PizzaData.Add(pizza)" class="btn btn-success rounded-3 d-flex justify-content-center align-items-center" style="width : 80px; height : 60px">
+                            <img src="/images/cart-2-bold.svg" alt="icone d'un panier en noir & blanc" style="width : 35px" />
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+    <div class="col">
+        <Cart PizzaData="PizzaData" />
+    </div>
+</div>
+
+@code {
+    private bool Checked { get; set; }
+
+    private List<MyPizza> _myPizzasList = new List<MyPizza>();
+
+    protected override void OnInitialized()
+    {
+        _myPizzasList = MyPizzas.GetAll();
+    }
+
+    public List<MyPizza> PizzaData { get; set; } = new List<MyPizza>();
+
+    private void ReRender(MouseEventArgs e)
+    {
+        Console.WriteLine(e);
+        StateHasChanged();
+    }
+}
