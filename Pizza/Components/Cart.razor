@@ -1,15 +1,16 @@
 ﻿@using Pizza.Models
+@using System.Globalization;
 
 <div class="d-flex justify-content-center">
     <ul class="list-group" style="width : 50%">
-        @foreach (MyPizza pizza in PizzaData)
+        @foreach (var pizza in PizzaData)
         {
             <li class="list-group-item border-0">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="fs-5 fw-bold text-warning mb-0">@pizza.Name</h5>
+                    <h5 class="fs-5 fw-bold text-warning mb-0">@pizza.Key.Name X @pizza.Value</h5>
                     <div class="d-flex align-items-center">
-                        <p class="text-info fs-5 fw-bolder text-center mb-0 mx-3">@(pizza.Price + ".00")€</p>
-                        <button class="btn" @onclick="() => PizzaData.Remove(pizza)">
+                        <p class="text-info fs-5 fw-bolder text-center mb-0 mx-3">@((pizza.Value * pizza.Key.Price).ToString("C2", CultureInfo.CreateSpecificCulture("fr-FR")))€</p>
+                        <button class="btn" @onclick="() => RemoveFromCart(pizza.Key)">
                             <img src="/images/cancel-bold.svg" alt="icone du signe multiplier en rouge" style="width : 20px" />
                         </button>
                     </div>
@@ -19,11 +20,32 @@
     </ul>
 </div>
 <div>
-    <p class="text-center fs-4 text-info fw-bolder">Total : @PizzaData.Sum(p => p.Price)€</p>
+    <p class="text-center fs-4 text-info fw-bolder">Total : @PizzaData.Sum(p => p.Key.Price * p.Value).ToString("C2", CultureInfo.CreateSpecificCulture("fr-FR"))€</p>
+</div>
+<div class="d-flex justify-content-center">
+    <button @onclick="() => EmptyCart()" class="btn btn-primary">Vider le panier</button>
 </div>
 
 @code {
     [Parameter]
-    public List<MyPizza> PizzaData { get; set; } = new List<MyPizza>();
+    public Dictionary<MyPizza, int> PizzaData { get; set; } = new Dictionary<MyPizza, int>();
     public decimal Total { get; set; }
+
+    private void EmptyCart()
+    {
+        PizzaData.Clear();
+    }
+
+    private void RemoveFromCart(MyPizza pizza)
+    {
+        if (PizzaData[pizza] == 1)
+        {
+            PizzaData.Remove(pizza);
+        }
+        else
+        {
+            PizzaData[pizza]--;
+        }
+    }
+
 }

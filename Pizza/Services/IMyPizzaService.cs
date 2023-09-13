@@ -10,7 +10,7 @@ namespace Pizza.Services
         List<MyPizza> GetAll(Expression<Func<MyPizza, bool>> predicate);
         MyPizza? GetById(Expression<Func<MyPizza, bool>> predicate);
         MyPizza? GetById(int id);
-        bool Post(MyPizza myPizza);
-        bool Update(MyPizza myPizza);
+        void Post(MyPizza myPizza);
+        void Update(MyPizza myPizza);
     }
 }

@@ -1,14 +1,27 @@
 ﻿@using Pizza.Models;
 @using Pizza.Services;
+@using Pizza.DTO;
 @inject MyPizzaFakeDbService MyPizzas;
 
-<h3 class="btn btn-success w-100" @onclick="() => IsAddPizza = !IsAddPizza"><span><img src="/images/add.svg" alt="icone plus" style="margin-right : 5px; margin-bottom : 1px; height : 20px" /></span>Ajouter une pizza</h3>
+<h3 class="btn btn-success w-100" @onclick="() => IsAddPizza = !IsAddPizza"><span><img src="/images/add.svg" alt="icone plus" style="margin-right : 5px; margin-bottom : 1px; height : 20px" /></span>@(ModelPizza.Id == 0 ? "Ajouter une pizza" : "Modifier une pizza")</h3>
 
+@if(ModelPizza.Id != 0)
+{
+    IsAddPizza = true;
+}
 @if (IsAddPizza)
 {
-    <EditForm Model="ModelPizza" OnSubmit="HandleSubmit" @onclick="RerenderCallBack" class="mb-5">
+    <EditForm 
+        Model="ModelPizza" 
+        OnSubmit="HandleSubmit"
+        class="mb-5"
+    >
         <DataAnnotationsValidator />
         <div>
+            <div class="mb-3">
+                <label for="id" class="form-label" hidden>Nom :</label>
+                <InputNumber @bind-Value="ModelPizza.Id" class="form-control" id="id" placeholder="Le nom de la pizza ici..." hidden></InputNumber>
+            </div>
             <div class="mb-3">
                 <label for="name" class="form-label">Nom :</label>
                 <InputText @bind-Value="ModelPizza.Name" class="form-control" id="name" placeholder="Le nom de la pizza ici..."></InputText>
@@ -49,15 +62,42 @@
 }
 
 @code {
-    public MyPizza ModelPizza { get; set; } = new MyPizza();
+    [Parameter]
+    public PizzaToAddOrEdit ModelPizza { get; set; } = new PizzaToAddOrEdit();
 
     public bool IsAddPizza { get; set; } = false;
 
-    private void HandleSubmit()
+    private async Task HandleSubmit()
     {
-        MyPizzas.Post(ModelPizza);
+        if(ModelPizza.Id == 0)
+        {
+            var pizzaToAdd = new MyPizza()
+            {
+                Name = ModelPizza.Name,
+                Price = ModelPizza.Price,
+                PicturePath = ModelPizza.PicturePath,
+                Ingredients = ModelPizza.Ingredients!.Split(",").Select(ingredient => new Ingredient() {Name = ingredient.Trim()}).ToList()
+            };
+            MyPizzas.Post(pizzaToAdd);
+            IsAddPizza = false;
+            await RerenderCallBack.InvokeAsync();
+        }
+        else
+        {
+            var pizzaToUpdate = new MyPizza()
+            {
+                Id = ModelPizza.Id,
+                Name = ModelPizza.Name,
+                Price = ModelPizza.Price,
+                PicturePath = ModelPizza.PicturePath,
+                Ingredients = ModelPizza.Ingredients!.Split(",").Select(ingredient => new Ingredient() { Name = ingredient.Trim() }).ToList()
+            };
+            MyPizzas.Update(pizzaToUpdate);
+            IsAddPizza = false;
+            await RerenderCallBack.InvokeAsync();
+        }
     }
 
     [Parameter]
-    public EventCallback<MouseEventArgs> RerenderCallBack { get; set; }
+    public EventCallback RerenderCallBack { get; set; }
 }

@@ -1,5 +1,6 @@
 ﻿@page "/pizzas-restaurante";
 @using Pizza.Models;
+@using Pizza.DTO;
 @using Pizza.Services;
 @inject MyPizzaFakeDbService MyPizzas;
 
@@ -13,7 +14,7 @@
 
 @if (Checked)
 {
-<AddPizza RerenderCallBack="ReRender" />
+<AddPizza RerenderCallBack="ReRender" ModelPizza="ModelPizza" />
 }
 
 <div class="row">
@@ -28,7 +29,7 @@
                     <div class="col-md-8">
                         <div class="card-body pt-0">
                             <h5 class="card-title fs-4 fw-bold text-warning">@pizza.Name</h5>
-                            <p class="card-text fst-italic">@pizza.Ingredients</p>
+                            <p class="card-text fst-italic">@string.Join(", ", pizza.Ingredients!)</p>
                         </div>
                     </div>
                 </div>
@@ -37,27 +38,26 @@
                     @if(Checked)
                     {
                         <div style="width : 80px" class="d-flex">
-                            <button @onclick="() => PizzaData.Add(pizza)" class="btn btn-success rounded-3 d-flex justify-content-center align-items-center" style="width : 40px; height : 30px">
+                            <button @onclick="() => AddToCart(pizza)" class="btn btn-success rounded-3 d-flex justify-content-center align-items-center" style="width : 40px; height : 30px">
                                 <img src="/images/cart-2-bold.svg" alt="icone d'un panier en noir & blanc"/>
                             </button>
-                            <button class="btn btn-info rounded-3 d-flex justify-content-center align-items-center" style="width : 40px; height : 30px">
+                            <button @onclick="() => UpdatePizza(pizza)" class="btn btn-info rounded-3 d-flex justify-content-center align-items-center" style="width : 40px; height : 30px">
                                 <img src="/images/edit.svg" alt="icone editer" />
                             </button>
                         </div>
-                        <button @onclick="() => MyPizzas.Delete(pizza.Id)" class="btn btn-danger rounded-3 d-flex justify-content-center align-items-center" style="width : 80px; height : 30px">
+                        <button @onclick="() => Delete(pizza)" class="btn btn-danger rounded-3 d-flex justify-content-center align-items-center" style="width : 80px; height : 30px">
                             <img src="/images/delete.svg" alt="icone editer" />
                         </button>
                     }
                     else
                     {
-                        <button @onclick="() => PizzaData.Add(pizza)" class="btn btn-success rounded-3 d-flex justify-content-center align-items-center" style="width : 80px; height : 60px">
+                        <button @onclick="() => AddToCart(pizza)" class="btn btn-success rounded-3 d-flex justify-content-center align-items-center" style="width : 80px; height : 60px">
                             <img src="/images/cart-2-bold.svg" alt="icone d'un panier en noir & blanc" style="width : 35px" />
                         </button>
                     }
                 </div>
             </div>
         }
-
     </div>
     <div class="col">
         <Cart PizzaData="PizzaData" />
@@ -66,6 +66,7 @@
 
 @code {
     private bool Checked { get; set; }
+    private PizzaToAddOrEdit? ModelPizza { get; set; } = new PizzaToAddOrEdit();
 
     private List<MyPizza> _myPizzasList = new List<MyPizza>();
 
@@ -74,11 +75,42 @@
         _myPizzasList = MyPizzas.GetAll();
     }
 
-    public List<MyPizza> PizzaData { get; set; } = new List<MyPizza>();
+    public Dictionary<MyPizza, int> PizzaData { get; set; } = new Dictionary<MyPizza, int>();
 
-    private void ReRender(MouseEventArgs e)
+    public void AddToCart(MyPizza pizza)
     {
-        Console.WriteLine(e);
+        if (PizzaData.ContainsKey(pizza))
+        {
+            PizzaData[pizza]++;
+        }
+        else
+        {
+            PizzaData.Add(pizza, 1);
+        }
+    }
+
+    private void ReRender()
+    {
+        // Checked = false;
+        ModelPizza = new PizzaToAddOrEdit();
         StateHasChanged();
+    }
+
+    public void UpdatePizza(MyPizza pizza)
+    {
+        var updatedModelPizza = new PizzaToAddOrEdit()
+            {
+                Id = pizza.Id,
+                Name = pizza.Name,
+                Price = pizza.Price,
+                PicturePath = pizza.PicturePath,
+                Ingredients = string.Join(",", pizza.Ingredients!)
+            };
+        ModelPizza = updatedModelPizza;
+    }
+    public void Delete(MyPizza pizza)
+    {
+        PizzaData.Remove(pizza);
+        MyPizzas.Delete(pizza.Id);
     }
 }
